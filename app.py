@@ -1,6 +1,5 @@
 # -*- coding: UTF-8 -*-
 from flask import Flask, render_template, request
-#from werkzeug import secure_filename
 import numpy as np
 
 app = Flask(__name__)
@@ -18,12 +17,13 @@ def upload_file():
     if request.method == 'POST':
         file_str = request.files['file'].read()
 
-        npimg = np.fromstring(file_str, np.uint8)
+        npimg = np.fromstring(file_str, np.float32)
+        print(npimg.shape)
 
-        if np.size(npimg)<100:
-            return "Img size is under 100"
+        if np.size(npimg)<32:
+            return "Img size is under 32, " + str(file_str)
 
-        npimg = npimg[:100].reshape(1,-1)
+        npimg = npimg.reshape(1,32,32,3)
         print(npimg.shape)
         result = my_model.predict(npimg, verbose=0)
         return 'uploads 디렉토리 -> 파일 업로드 성공 and result:  ' + str(result)
@@ -33,9 +33,9 @@ def upload_file():
 
 
 if __name__ == '__main__':
-    from model import get_model
+    import tensorflow.keras.models as models
     global my_model
-    my_model=get_model()
+    my_model= models.load_model("mobilenet_v1.h5")
 
     app.run(debug=True,
             host="0.0.0.0",
