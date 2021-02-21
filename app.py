@@ -15,10 +15,27 @@ def home():
 @app.route('/upload', methods = ['GET','POST'])
 def upload_file():
     if request.method == 'POST':
-        file_str = request.files['file'].read()
+        file_str = request.files['file']#.read() #only for him
 
-        npimg = np.fromstring(file_str, np.float32)
+        print(type(file_str))
+
+        file_name = "my_img"+ str(np.random.rand(1)) + "jpeg"
+        file_str.save(file_name)
+        
+        from PIL import Image
+        im = Image.open(file_name)
+        npimg = np.array(im)
         print(npimg.shape)
+
+        ####for him
+        #from PIL import Image
+        #Im.save
+
+        ####end here
+
+        #original
+        #npimg = np.fromstring(file_str, np.float32)
+        #print(npimg.shape)
 
         if np.size(npimg)<32:
             return "Img size is under 32, " + str(file_str)
@@ -26,7 +43,7 @@ def upload_file():
         npimg = npimg.reshape(1,32,32,3)
         print(npimg.shape)
         result = my_model.predict(npimg, verbose=0)
-        return 'uploads 디렉토리 -> 파일 업로드 성공 and result:  ' + str(result)
+        return 'uploads 디렉토리 -> 파일 업로드 성공 and result:  ' + str(result) + "\n\n"
 
 
 
