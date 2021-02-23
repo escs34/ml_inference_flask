@@ -15,10 +15,14 @@ def home():
 @app.route('/upload', methods = ['GET','POST'])
 def upload_file():
     if request.method == 'POST':
-        file_str = request.files['file']#.read() #only for him
+        file_str = request.files['file'].read() # comment to read() for him
+        
+        
 
         print(type(file_str))
 
+        ###only for him
+        """
         file_name = "my_img"+ str(np.random.rand(1)) + "jpeg"
         file_str.save(file_name)
         
@@ -26,16 +30,13 @@ def upload_file():
         im = Image.open(file_name)
         npimg = np.array(im)
         print(npimg.shape)
-
-        ####for him
-        #from PIL import Image
-        #Im.save
+        """
 
         ####end here
 
         #original
-        #npimg = np.fromstring(file_str, np.float32)
-        #print(npimg.shape)
+        npimg = np.fromstring(file_str, np.float32)
+        print(npimg.shape)
 
         if np.size(npimg)<32:
             return "Img size is under 32, " + str(file_str)

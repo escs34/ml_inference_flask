@@ -2,3 +2,6 @@
   
 *.ipynb
 *.jpeg
+
+ignore_here/
+ignore_here/*
