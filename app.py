@@ -15,13 +15,12 @@ def home():
 @app.route('/upload', methods = ['GET','POST'])
 def upload_file():
     if request.method == 'POST':
-        file_str = request.files['file'].read() # comment to read() for him
+        file_str = request.files['file'].read() # erase read() when receive only image file.
         
         
 
         print(type(file_str))
 
-        ###only for him
         """
         file_name = "my_img"+ str(np.random.rand(1)) + "jpeg"
         file_str.save(file_name)
@@ -32,7 +31,6 @@ def upload_file():
         print(npimg.shape)
         """
 
-        ####end here
 
         #original
         npimg = np.fromstring(file_str, np.float32)
