@@ -15,26 +15,10 @@ def home():
 @app.route('/upload', methods = ['GET','POST'])
 def upload_file():
     if request.method == 'POST':
-        file_str = request.files['file'].read() # erase read() when receive only image file.
-        
-        
-
-        print(type(file_str))
-
-        """
-        file_name = "my_img"+ str(np.random.rand(1)) + "jpeg"
-        file_str.save(file_name)
-        
-        from PIL import Image
-        im = Image.open(file_name)
-        npimg = np.array(im)
-        print(npimg.shape)
-        """
-
+        file_str = request.files['file'].read()
 
         #original
         npimg = np.fromstring(file_str, np.float32)
-        print(npimg.shape)
 
         if np.size(npimg)<32:
             return "Img size is under 32, " + str(file_str)
@@ -44,6 +28,37 @@ def upload_file():
         result = my_model.predict(npimg, verbose=0)
         return 'uploads 디렉토리 -> 파일 업로드 성공 and result:  ' + str(result) + "\n\n"
 
+
+@app.route('/upload_jpg', methods = ['GET','POST'])
+def upload_file_jpg():
+    if request.method == 'POST':
+        
+
+        file_str = request.files['file'].read()
+        
+        #get from multipart means getting bytes of image.
+        #it must be decoded to normal image.
+        #this task can be done by opencv or PIL.Image
+        #this function use PIL.Image.
+        
+        data = np.fromstring(file_str, dtype=np.uint8)
+        
+        import io
+        data_io = io.BytesIO(data)
+        
+        from PIL import Image
+        img = Image.open(data_io)
+        npimg = np.array(img)
+        
+        
+        #original
+        if np.size(npimg)<32:
+            return "Img size is under 32, " + str(file_str)
+
+        npimg = npimg.reshape(1,32,32,3)
+        print(npimg.shape)
+        result = my_model.predict(npimg, verbose=0)
+        return 'uploads jpg 디렉토리 -> 파일 업로드 성공 and result:  ' + str(result) + "\n\n"
 
 
 
