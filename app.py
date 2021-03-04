@@ -1,6 +1,7 @@
 # -*- coding: UTF-8 -*-
 from flask import Flask, render_template, request
 import numpy as np
+import time
 
 app = Flask(__name__)
 
@@ -33,7 +34,7 @@ def upload_file():
 def upload_file_jpg():
     if request.method == 'POST':
         
-
+        process_start = time.time()
         file_str = request.files['file'].read()
         
         #get from multipart means getting bytes of image.
@@ -57,7 +58,22 @@ def upload_file_jpg():
 
         npimg = npimg.reshape(1,32,32,3)
         print(npimg.shape)
-        result = my_model.predict(npimg, verbose=0)
+
+        if np.mean(average_time) > 5:
+            print("model : 0")
+            result = my_models[-1].predict(npimg, verbose=0)
+        else:
+            print("model : last")
+            result = my_models[0].predict(npimg, verbose=0)
+            
+        process_end = time.time()
+
+        average_time.append(process_end - process_start)
+
+        if len(average_time) >50 :
+            average_time.clear()
+        
+        
         return 'uploads jpg 디렉토리 -> 파일 업로드 성공 and result:  ' + str(result) + "\n\n"
 
 
@@ -65,8 +81,20 @@ def upload_file_jpg():
 
 if __name__ == '__main__':
     import tensorflow.keras.models as models
-    global my_model
-    my_model= models.load_model("mobilenet_v1.h5")
+    import tensorflow as tf
+    global my_models
+    
+    my_models = []
+
+    with tf.device('/cpu:0'):
+        total_model= models.load_model("ResNet164_v1_spinal.h5")
+
+        for each_output in total_model.outputs:
+            tmp_model = tf.keras.models.Model(inputs=total_model.input, outputs=each_output)
+            my_models.append(tmp_model)
+
+    global average_time
+    average_time = []
 
     app.run(debug=True,
             host="0.0.0.0",
