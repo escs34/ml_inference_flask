@@ -2,6 +2,8 @@
   
 *.ipynb
 *.jpeg
+*.h5
+*.db
 
 ignore_here/
 ignore_here/*

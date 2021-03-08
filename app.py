@@ -1,9 +1,12 @@
 # -*- coding: UTF-8 -*-
 from flask import Flask, render_template, request
+import flask_monitoringdashboard as dashboard
+
 import numpy as np
 import time
 
 app = Flask(__name__)
+dashboard.bind(app)
 
 @app.route('/')
 def index():
@@ -61,18 +64,20 @@ def upload_file_jpg():
 
         if np.mean(average_time) > 5:
             print("model : 0")
-            result = my_models[-1].predict(npimg, verbose=0)
+            with tf.device('/cpu:0'):
+                result = my_models[0].predict(npimg, verbose=0)
         else:
             print("model : last")
-            result = my_models[0].predict(npimg, verbose=0)
+            with tf.device('/cpu:0'):
+                result = my_models[-1].predict(npimg, verbose=0)
             
         process_end = time.time()
 
-        average_time.append(process_end - process_start)
 
         if len(average_time) >50 :
             average_time.clear()
         
+        average_time.append(process_end - process_start)
         
         return 'uploads jpg 디렉토리 -> 파일 업로드 성공 and result:  ' + str(result) + "\n\n"
 
