@@ -5,8 +5,18 @@ import flask_monitoringdashboard as dashboard
 import numpy as np
 import time
 
+import logging
+
+import os
+
+log_directory = 'logs'
+if not os.path.exists(log_directory):
+    os.makedirs(log_directory)
+
+logging.basicConfig(filename = 'logs/load_jpg.log', level = logging.INFO)
 app = Flask(__name__)
 dashboard.bind(app)
+
 
 @app.route('/')
 def index():
@@ -15,6 +25,18 @@ def index():
 @app.route('/home/')
 def home():
     return 'Hello, World!'
+
+@app.route('/log', methods=['GET', 'POST'])
+def log():
+    if request.is_json:
+        print("It's JSON LOG!!")
+        params = request.get_json()
+        print(params['num_of_p'])
+
+        mess = "NUM OF P: " + str(params['num_of_p'])
+        logging.info(mess)
+        return "logged"
+    return "failed"
 
 @app.route('/upload', methods = ['GET','POST'])
 def upload_file():
@@ -44,7 +66,11 @@ def upload_file_jpg():
         #it must be decoded to normal image.
         #this task can be done by opencv or PIL.Image
         #this function use PIL.Image.
-        
+
+        #(1)
+        time_1 = time.time()
+        #print(time_1 - process_start)
+
         data = np.fromstring(file_str, dtype=np.uint8)
         
         import io
@@ -62,6 +88,10 @@ def upload_file_jpg():
         npimg = npimg.reshape(1,32,32,3)
         print(npimg.shape)
 
+        #(2)
+        time_2 = time.time()
+        #print(time_2 - time_1)
+
         if np.mean(average_time) > 5:
             print("model : 0")
             with tf.device('/cpu:0'):
@@ -70,7 +100,9 @@ def upload_file_jpg():
             print("model : last")
             with tf.device('/cpu:0'):
                 result = my_models[-1].predict(npimg, verbose=0)
-            
+        #(3)    
+        time_3= time.time()
+        #print(time_3 - time_1)
         process_end = time.time()
 
 
@@ -79,6 +111,15 @@ def upload_file_jpg():
         
         average_time.append(process_end - process_start)
         
+        log_message="{0}//{1}//{2}//{3}".format(process_start,
+                                                time_1,
+                                                time_2,
+                                                time_3)
+        logging.info(log_message)
+        #print("time1, time2, time3 : ", time_1 - process_start, time_2 - time_1, time_3 - time_2)
+
+       
+
         return 'uploads jpg 디렉토리 -> 파일 업로드 성공 and result:  ' + str(result) + "\n\n"
 
 
